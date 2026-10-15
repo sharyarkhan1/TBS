@@ -1,0 +1,44 @@
+# Clean public URLs.
+Options -MultiViews
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect direct PHP requests so .php is never shown publicly.
+    RewriteCond %{THE_REQUEST} \s/+index\.php(?:[?\s]) [NC]
+    RewriteRule ^index\.php$ ./ [R=301,L]
+
+    RewriteCond %{THE_REQUEST} \s/+booking\.php(?:[?\s]) [NC]
+    RewriteRule ^booking\.php$ booking [R=301,L,NE]
+
+    # Public booking URL -> internal PHP handler.
+    RewriteRule ^booking/?$ booking.php [L,QSA]
+</IfModule>
+
+# Compress text assets when Apache modules are available.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Keep versioned/static assets in the browser cache while allowing HTML/PHP to update immediately.
+<IfModule mod_headers.c>
+	Header set X-Robots-Tag "noindex, nofollow, noarchive"
+    <FilesMatch "\.(css|js|mjs|svg|woff2|jpg|jpeg|png|gif|webp|avif|mp4)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(php|html)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType video/mp4 "access plus 1 year"
+</IfModule>
